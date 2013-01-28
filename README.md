@@ -9,7 +9,7 @@ It's a jQuery plugin that lets manage the browser history and compatible with al
 Demo online
 --------------------------------------
 
-http://jsfiddle.net/yeikos/rcZWb/
+http://fiddle.jshell.net/yeikos/rcZWb/show/light
 
 Changelog
 --------------------------------------
