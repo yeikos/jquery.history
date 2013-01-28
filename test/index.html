@@ -1,0 +1,270 @@
+<!DOCTYPE html><html>
+
+    <head>
+
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<title>jQuery.history v1.0.0</title>
+
+		<link rel="stylesheet" href="qunit.css" />
+		<script src="qunit.js"></script>
+
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
+
+		<script src="../jquery.history.js"></script>
+
+		<script>
+
+			var History = $.history,
+
+				pathname = location.pathname + location.search + location.hash;
+
+			test('History.context', function() {
+
+				ok(History.context instanceof jQuery && History.context.length === 1);
+
+			});
+
+			test('History.on', 2, function() {
+
+				History.on('test', function(event, a, b) {
+
+					ok(event instanceof $.Event);
+					ok(a === 'a' && b === 'b');
+
+				});
+
+				History.context.trigger('test', ['a', 'b']).off();
+		
+			});
+
+			test('History.off', 0, function() {
+
+				History.on('test', function() {
+
+					ok();
+
+				}).off();
+
+				History.context.trigger('test');
+
+			});
+
+			test('History.trigger', 2, function() {
+				
+				History.on('test', function(event, a, b) {
+
+					ok(event instanceof $.Event);
+					ok(a === 'a' && b === 'b');
+
+				}).trigger('test', ['a', 'b']).off();
+
+			});
+
+			test('History.getSupports', function() {
+
+				var supports = History.getSupports();
+
+				ok($.type(supports) === 'object');
+				ok($.type(supports.pushState) === 'boolean');
+				ok($.type(supports.onhashchange) === 'boolean');
+
+				ok($.type(History.getSupports('pushState')) === 'boolean');
+				ok($.type(History.getSupports('onhashchange')) === 'boolean');
+				ok($.type(History.getSupports('not-exists')) === 'undefined');
+
+			});
+
+			test('History.supports', function() {
+
+				var supports = History.supports;
+
+				ok($.type(supports) === 'object');
+				ok($.type(supports.pushState), 'boolean');
+				ok($.type(supports.onhashchange), 'boolean');
+
+			});
+
+			test('History.isIE67', function() {
+
+				var ie = History.isIE67();
+
+				ok(true, 'You are' + (ie ? ' ' : ' not ') + 'on IE <= 7');
+				
+			});
+
+			test('History.unlisten', 2, function() {
+
+				$(window).on('popstate.history hashchange.history', function() {
+
+					ok();
+
+				});
+
+				$('<div id="jQueryHistory" style="display:none" />').appendTo('body');
+
+				History.unlisten();
+
+				$(window).trigger('popstate.history hashchange.history');
+
+				ok(!$('#jQueryHistory').length);
+
+				ok(History.getListenType() === null);
+
+			});
+
+			test('History.listen', function() {
+
+				raises(function() {
+
+					History.listen('not-exists');
+
+				});
+
+				if (!History.supports.pushState)
+
+					raises(function() {
+
+						History.listen('pathname');
+
+					});
+
+			});
+
+			asyncTest('History.listen("hash", [interval])', 8, function() {
+
+				location.hash = 'example1';
+
+				History.on('load', function(event, url, type) {
+
+					ok(url === 'example1');
+					ok(type === 'hash');
+
+				}).on('push', function(event, url, type) {
+
+					ok(url === 'example3');
+					ok(type === 'hash');
+
+					History.off().unlisten();
+
+					location.hash = '';
+
+					ok(History.getListenType() === null);
+
+					start();
+
+				}).on('change', function(event, url, type) {
+
+					ok(url === 'example2');
+					ok(type === 'hash');
+
+					History.push('example3');
+
+				}).listen('hash', true);
+
+				ok(History.getListenType() === 'hash');
+
+				location.hash = 'example2';
+
+			});
+
+			asyncTest('History.listen("hash")', 8, function() {
+
+				location.hash = 'example1';
+
+				History.on('load', function(event, url, type) {
+
+					ok(url === 'example1');
+					ok(type === 'hash');
+
+				}).on('push', function(event, url, type) {
+
+					ok(url === 'example3');
+					ok(type === 'hash');
+
+					History.off().unlisten();
+
+					location.hash = '';
+
+					ok(History.getListenType() === null);
+
+					start();
+
+				}).on('change', function(event, url, type) {
+
+					ok(url === 'example2');
+					ok(type === 'hash');
+
+					History.push('example3');
+
+				}).listen('hash');
+
+				ok(History.getListenType() === 'hash');
+
+				location.hash = 'example2';
+
+			});
+
+			asyncTest('History.listen("pathname")', 8, function() {
+
+				if (location.protocol === 'file:') {
+
+					ok(false, 'It\'s needed running this script over HTTP protocol to continue testing.');
+
+					start();
+
+					return;
+
+				}
+
+				window.history.pushState({}, null, '/example1');
+
+				History.on('load', function(event, url, type) {
+
+					ok(url === '/example1');
+					ok(type === 'pathname');
+
+				}).on('push', function(event, url, type) {
+
+					ok(url === '/example3');
+					ok(type === 'pathname');
+
+					History.off().unlisten();
+
+					window.history.pushState({}, null, pathname);
+
+					ok(History.getListenType() === null);
+
+					start();
+
+				}).on('change', function(event, url, type) {
+
+					ok(url === '/example2');
+					ok(type === 'pathname');
+
+					History.push('/example3');
+
+				}).listen('pathname');
+
+				ok(History.getListenType() === 'pathname');
+
+				window.history.pushState({}, null, '/example2');
+
+				var event = $.Event('popstate.history');
+
+				event.originalEvent = { state: true };
+
+				$(window).trigger(event);
+
+			});
+
+		</script>
+
+    </head>
+
+    <body>
+
+        <div id="qunit"></div>
+
+    </body>
+
+</html>

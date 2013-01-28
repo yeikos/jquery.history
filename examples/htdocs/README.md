@@ -1,0 +1,1 @@
+Put this files (index.php, .htaccess) into root folder of HTTP server.
