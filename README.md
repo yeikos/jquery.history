@@ -1,10 +1,10 @@
-jQuery.history v1.0.0
+jQuery.history v1.0.1
 ==================================================
 
-What is this?
+What is it?
 --------------------------------------
 
-It's a jQuery plugin that lets manage the browser history and compatible with all browsers (including IE6).
+It's a jQuery plugin that lets manage the browser history. It's compatible with all browsers (including IE6).
 
 Demo online
 --------------------------------------
@@ -14,6 +14,10 @@ http://fiddle.jshell.net/yeikos/rcZWb/show/light
 Changelog
 --------------------------------------
 
+**v1.0.1 - 07/05/13**
+
+- Bug fix in `load` event.
+
 **v1.0.0 - 28/01/13**
 
 - Initial version.
@@ -21,15 +25,15 @@ Changelog
 Example
 --------------------------------------
 
-	<html>
+	<!DOCTYPE html><html>
 
 		<head>
 
-			<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
-			<script type="text/javascript" src="https://raw.github.com/yeikos/jquery.history/master/jquery.history.js"></script>
+			<script src="https://yeikos.googlecode.com/files/jquery.history.js"></script>
 
-			<script type="text/javascript">
+			<script>
 
 				$(function() {
 

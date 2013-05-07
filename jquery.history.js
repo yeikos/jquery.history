@@ -1,5 +1,5 @@
 /*!
- * @name jQuery.history v1.0.0
+ * @name jQuery.history v1.0.1
  * @author yeikos
  * @repository https://github.com/yeikos/jquery.history
  * @dependencies jQuery 1.7.0+
@@ -138,7 +138,7 @@
 			if ((!_onhashchange && size === 1) || interval === true) {
 
 				// Establecemos el intervalo de la configuración
-			
+
 				interval = Public.config.interval;
 
 				size = 2;
@@ -178,7 +178,7 @@
 
 			if (location.pathname.length > 1)
 
-				Public.trigger('load', [location.pathname, 'pathname']);
+				Public.trigger('load', [location.pathname + location.search + location.hash, 'pathname']);
 
 		} else {
 
@@ -307,7 +307,7 @@
 	};
 
 	// Obtiene el soporte de ciertas funcionalidades del navegador
-	
+
 	Public.getSupports = function(type) {
 
 		var result = {},
@@ -391,7 +391,7 @@
 	// Intervalo utilizado por la emulación del evento `hashchange`
 
 		_interval,
-	
+
 	// Iframe utilizado para generar el historial en IE6/IE7
 
 		_iframe,
