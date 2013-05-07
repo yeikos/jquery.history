@@ -82,7 +82,7 @@
 
 			<?php 
 
-				echo isset($_GET['section']) ? htmlspecialchars($_GET['section']) : ''; 
+				echo isset($_GET['section']) ? htmlspecialchars('/' . $_GET['section']) : ''; 
 
 			?>
 
