@@ -1,12 +1,11 @@
 /*!
- * @name jQuery.history v1.0.1
+ * @namejQuery.history v1.0.1
  * @author yeikos
  * @repository https://github.com/yeikos/jquery.history
  * @dependencies jQuery 1.7.0+
 
- * Copyright 2013
- * GNU General Plugin License
- * http://www.gnu.org/licenses/gpl-3.0.txt
+ * Copyright 2013 yeikos - MIT license
+ * https://raw.github.com/yeikos/js.merge/master/LICENSE
  */
 
 ;(function($, undefined) {
