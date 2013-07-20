@@ -4,27 +4,13 @@
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
-		<script src="https://yeikos.googlecode.com/files/jquery.history.js"></script>
+		<script src="http://files.yeikos.com/jquery.history.js"></script>
 
 		<script>
 			
 			$(function() {
 
-				if (!$.history.supports.pushState && location.pathname.length > 1) {
-
-					// /pathname -> /#/pathname
-
-					location.href = '/#' + location.pathname;
-
-				} else if ($.history.supports.pushState && location.hash.substr(1, 1) === '/') {
-
-					// /#/pathname -> /pathname
-
-					location.href = location.hash.substr(1);
-
-				}
-
-				// history
+				var type;
 
 				$.history.on('load change', function(event, url, type) {
 
@@ -33,6 +19,22 @@
 						request(url);
 
 				}).listen();
+
+				type = $.history.type();
+
+				if (type === 'hash' && location.pathname.length > 1) {
+
+					// /pathname -> /#/pathname
+
+					location.href = '/#' + location.pathname;
+
+				} else if (type === 'pathname' && location.hash.substr(1, 1) === '/') {
+
+					// /#/pathname -> /pathname
+
+					location.href = location.hash.substr(1);
+
+				}
 
 				// dom listener
 

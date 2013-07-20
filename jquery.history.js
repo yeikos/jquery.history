@@ -1,5 +1,5 @@
 /*!
- * @namejQuery.history v1.0.1
+ * @name jQuery.history v1.1.0
  * @author yeikos
  * @repository https://github.com/yeikos/jquery.history
  * @dependencies jQuery 1.7.0+
@@ -12,7 +12,15 @@
 
 	var Public = function(url) {
 
-		// Establecemos la nueva dirección siempre y cuando ésta haya cambiado
+		var event = $.Event('push');
+
+		Public.context.trigger(event, [url, _type]);
+
+		if (event.isDefaultPrevented())
+
+			return Public;
+
+		// Establecemos la nueva dirección siempre y cuando haya cambiado
 
 		if (_type === 'pathname') {
 
@@ -24,7 +32,7 @@
 
 			if (_last !== url) {
 
-				_last = location.hash = url;
+				location.hash = _last = url;
 
 				// Si se trata de IE6/IE7
 
@@ -64,17 +72,17 @@
 
 			// Es necesario que se haya iniciado una escucha activa para establecer una dirección
 
-			throw new Error('jQuery.' + publicName + '.push: listener is not active.');
+			throw new Error('jQuery.' + publicName + '.push: the listening is not active.');
 
 		}
 
-		Public.context.trigger('push', [url, _type]);
+		Public.context.trigger('pushed', [url, _type]);
 
 		return Public;
 
 	}, publicName = 'history';
 
-	// Contexto donde se centralizan los eventos (`load`, `change`, `push`)
+	// Contexto donde se centralizan los eventos (`load`, `change`, `push`, `pushed`)
 
 	Public.context = $({});
 
@@ -98,9 +106,39 @@
 
 	// Obtiene el tipo de escucha actual (`pathname`, `hash`, `null`)
 
-	Public.getListenType = function() {
+	Public.type = function() {
 
 		return _type;
+
+	};
+
+	// Obtiene la dirección actual según el tipo de escucha
+
+	Public.url = function(_location) {
+
+		_location = _location || location;
+
+		if (_type === null)
+
+			throw new Error ('jQuery.' + publicName + '.url: the listening has not started.');
+
+		if (_type === 'pathname')
+
+			return _location.pathname + _location.search + _location.hash;
+
+		if (_location.hash.length > 1) {
+
+			spl = _location.href.split('#');
+
+			spl.shift();
+
+			spl = spl.join('#');
+
+			return spl;
+
+		}
+
+		return '';
 
 	};
 
@@ -171,13 +209,13 @@
 
 				if (event.originalEvent && event.originalEvent.state && _last !== location.pathname)
 
-					Public.trigger('change', [_last = location.pathname, 'pathname']);
+					Public.trigger('change', [_last = Public.url(), 'pathname']);
 
 			});
 
 			if (location.pathname.length > 1)
 
-				Public.trigger('load', [location.pathname + location.search + location.hash, 'pathname']);
+				Public.trigger('load', [Public.url(), 'pathname']);
 
 		} else {
 
@@ -189,7 +227,7 @@
 
 				$(window).on('hashchange.history', function(event) {
 
-					var hash = location.hash.substr(1);
+					var hash = Public.url();
 
 					if (_last !== hash)
 
@@ -201,13 +239,13 @@
 
 			} else {
 
-				// Si no se ha detecto si el navegador es IE6/IE67
+				// Si no se ha detecto si el navegador es IE6/IE7
 
 				if (_ie67 === undefined)
 
 					// Realizamos la comprobación una sola vez
 
-					_ie67 = Public.isIE67();
+					_ie67 = Public.ieCondition('lte IE 7');
 
 				// Si se trata de IE6/IE7
 
@@ -231,7 +269,7 @@
 
 						win.document.open().close();
 
-						win.location.hash = location.hash;
+						win.location.hash = '#' + Public.url();
 
 					}
 
@@ -241,7 +279,7 @@
 
 						// Si la dirección actual es diferente a la del `iframe`
 
-						if ((_last = location.hash) !== win.location.hash) {
+						if ((_last = '#' + Public.url()) !== ('#' + Public.url(win.location))) {
 
 							// Actualizamos la dirección del `iframe`
 
@@ -259,11 +297,11 @@
 
 					// Emulamos el evento `haschange` mediante un intervalo
 
-					_last = location.hash.substr(1);
+					_last = Public.url();
 
 					_interval = setInterval(function() {
 
-						var hash = location.hash.substr(1);
+						var hash = Public.url();
 
 						if (_last !== hash)
 
@@ -277,11 +315,13 @@
 
 			// Si ya se encuentra un `hash` definido en el documento
 
-			if (location.hash.length > 1)
+			if (location.hash.length > 1)  {
 
 				// Emitimos el evento `load`
 
-				Public.trigger('load', [location.hash.substr(1), 'hash']);
+				Public.trigger('load', [Public.url(), 'hash']);
+
+			}
 
 		}
 
@@ -289,7 +329,7 @@
 
 	};
 
-	// Desactiva cualquier tipo de escucha realizada por `History.listen`
+	// Desactiva cualquier tipo de escucha realizada por `listen`
 
 	Public.unlisten = function() {
 
@@ -331,17 +371,15 @@
 
 	};
 
-	// Comprueba si el navegador es IE6/IE7
+	// Comprueba si el navegador corresponde con las versiones de IE especificadas
 
-	Public.isIE67 = function() {
+	Public.ieCondition = function(input) {
 
-		var name = '_history_msie',
-
+		var id = Math.random().toString(36).substring(2),
+			name = '_ie_condition_' + id,
 			$msie, result;
 
-		window[name] = false;
-
-		$msie =	$('<span><!--[if lte IE 7]><script type="text/javascript">window.' + name + '=true;</script><![endif]--></span>').appendTo('body');
+		$msie =	$('<span><!--[if ' + $('<i/>').html(input).text() + ']><script type="text/javascript">window.' + name + '=true;</script><![endif]--></span>').appendTo(document.body);
 
 		result = (window[name] === true);
 
@@ -381,7 +419,9 @@
 
 		_onhashchange = Public.supports.onhashchange,
 
-		_ie67,
+	// Versión IE6/7
+
+		_ie67 = Public.ieCondition('lte IE 7'),
 
 	// Tipo actual de escucha
 

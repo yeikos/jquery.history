@@ -66,31 +66,31 @@ test('$.history.supports', function() {
 
 });
 
-test('$.history.isIE67', function() {
+test('$.history.ieCondition', function() {
 
-	var ie = $.history.isIE67();
+	var x;
 
-	ok(true, 'You are' + (ie ? ' ' : ' not ') + 'on IE <= 7');
+	for(x=6;x<=10;++x)
+
+		ok(true, 'You are' + ($.history.ieCondition('IE ' + x) ? ' ' : ' not ') + 'over IE ' + x);
 
 });
 
 test('$.history.unlisten', 2, function() {
 
-	$(window).on('popstate.$.history hashchange.$.history', function() {
+	$(window).on('popstate.history hashchange.history', function() {
 
 		ok();
 
 	});
 
-	$('<div id="jQuery$.history" style="display:none" />').appendTo('body');
-
 	$.history.unlisten();
 
-	$(window).trigger('popstate.$.history hashchange.$.history');
+	$(window).trigger('popstate.history hashchange.history');
 
 	ok(!$('#jQueryHistory').length);
 
-	ok($.history.getListenType() === null);
+	ok($.history.type() === null);
 
 });
 
@@ -112,129 +112,139 @@ test('$.history.listen', function() {
 
 });
 
-asyncTest('$.history.listen("hash", [interval])', 8, function() {
+
+function handler(_type, _start, _finish) {
+
+	$.history.on('load', function(event, url, type) {
+
+		ok(url === '/example1?var=1#bottom');
+		ok(type === _type);
+
+		ok(url === $.history.url());
+		ok(type === $.history.type());
+
+	}).on('change', function(event, url, type) {
+
+		ok(url === '/example2#top');
+		ok(type === _type);
+
+		ok(url === $.history.url());
+		ok(type === $.history.type());
+
+		$.history.push('/example3');
+		$.history.push('/example4');
+
+	}).on('push', function(event, url, type) {
+
+		if (url === '/example3')
+
+			return event.preventDefault();
+
+		ok(url === '/example4');
+		ok(type === _type);
+
+		ok($.history.url() === '/example2#top');
+		ok(type === $.history.type());
+
+	}).on('pushed', function(event, url, type) {
+
+		ok(url === '/example4');
+		ok(type === _type);
+
+		ok(url === $.history.url());
+		ok(type === $.history.type());
+
+		$.history.off().unlisten();
+
+		_finish();
+
+		ok($.history.type() === null);
+
+		start();
+
+	});
+
+	_start();
+
+	ok($.history.url() === '/example1?var=1#bottom');
+	ok($.history.type() === _type);
+
+}
+
+asyncTest('$.history.listen("hash", [interval])', function() {
 
 	location.hash = '/example1?var=1#bottom';
 
-	$.history.on('load', function(event, url, type) {
+	handler('hash', function() {
 
-		ok(url === '/example1?var=1#bottom');
-		ok(type === 'hash');
+		$.history.listen('hash', true);
 
-	}).on('push', function(event, url, type) {
-
-		ok(url === '/example3');
-		ok(type === 'hash');
-
-		$.history.off().unlisten();
+	}, function() {
 
 		location.hash = '';
 
-		ok($.history.getListenType() === null);
+	});
 
-		start();
-
-	}).on('change', function(event, url, type) {
-
-		ok(url === '/example2');
-		ok(type === 'hash');
-
-		$.history.push('/example3');
-
-	}).listen('hash', true);
-
-	ok($.history.getListenType() === 'hash');
-
-	location.hash = '/example2';
+	location.hash = '/example2#top';
 
 });
 
-asyncTest('$.history.listen("hash")', 8, function() {
+asyncTest('$.history.listen("hash")', 19, function() {
 
 	location.hash = '/example1?var=1#bottom';
 
-	$.history.on('load', function(event, url, type) {
+	handler('hash', function() {
 
-		ok(url === '/example1?var=1#bottom');
-		ok(type === 'hash');
+		$.history.listen('hash');
 
-	}).on('push', function(event, url, type) {
-
-		ok(url === '/example3');
-		ok(type === 'hash');
-
-		$.history.off().unlisten();
+	}, function() {
 
 		location.hash = '';
 
-		ok($.history.getListenType() === null);
+	});
 
-		start();
-
-	}).on('change', function(event, url, type) {
-
-		ok(url === '/example2');
-		ok(type === 'hash');
-
-		$.history.push('/example3');
-
-	}).listen('hash');
-
-	ok($.history.getListenType() === 'hash');
-
-	location.hash = '/example2';
+	location.hash = '/example2#top';
 
 });
 
-asyncTest('$.history.listen("pathname")', 8, function() {
+if (location.protocol === 'file:') {
 
-	if (location.protocol === 'file:') {
+	(function() {
 
-		ok(false, 'It\'s needed running this script over HTTP protocol to continue testing.');
+		var message = '$.history.listen("pathname") can not run over FILE protocol.';
 
-		start();
+		if (typeof console === 'object' && typeof console.log === 'function')
 
-		return;
+			return console.log(message);
 
-	}
+		alert(message);
 
-	window.history.pushState({}, null, '/example1?var=1#bottom');
+	})();
 
-	$.history.on('load', function(event, url, type) {
+} else {
 
-		ok(url === '/example1?var=1#bottom');
-		ok(type === 'pathname');
+	asyncTest('$.history.listen("pathname")', 19, function() {
 
-	}).on('push', function(event, url, type) {
+		window.history.pushState({}, null, '/example1?var=1#bottom');
 
-		ok(url === '/example3');
-		ok(type === 'pathname');
+		handler('pathname', function() {
 
-		$.history.off().unlisten();
+			$.history.listen('pathname');
 
-		window.history.pushState({}, null, pathname);
+		}, function() {
 
-		ok($.history.getListenType() === null);
+			window.history.pushState({}, null, pathname);
 
-		start();
+		});
 
-	}).on('change', function(event, url, type) {
+		window.history.pushState({}, null, '/example2#top');
 
-		ok(url === '/example2');
-		ok(type === 'pathname');
+		var event = $.Event('popstate.history');
 
-		$.history.push('/example3');
+		event.originalEvent = { state: true };
 
-	}).listen('pathname');
+		$(window).trigger(event);
 
-	ok($.history.getListenType() === 'pathname');
+	});
 
-	window.history.pushState({}, null, '/example2');
-
-	var event = $.Event('popstate.history');
-
-	event.originalEvent = { state: true };
-
-	$(window).trigger(event);
-
-});
+}

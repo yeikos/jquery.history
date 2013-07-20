@@ -4,13 +4,13 @@
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
-		<script src="https://yeikos.googlecode.com/files/jquery.history.js"></script>
+		<script src="http://files.yeikos.com/jquery.history.js"></script>
 
 		<script>
 
 			$(function() {
 
-				$.history.on('load change push', function(event, url, type) {
+				$.history.on('load change push pushed', function(event, url, type) {
 
 					alert(event.type + ': ' + url);
 
