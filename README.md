@@ -38,7 +38,7 @@ Example
 
 			<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 
-			<script src="http://files.yeikos.com/jquery.history.js"></script>
+			<script src="https://cdn.jsdelivr.net/gh/yeikos/jquery.history/jquery.history.js"></script>
 
 			<script>
 
